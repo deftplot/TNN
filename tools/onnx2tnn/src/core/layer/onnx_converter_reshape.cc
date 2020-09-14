@@ -59,10 +59,10 @@ string OnnxOpConverterReshape::TNNLayerParam(NodeProto &node,
 
     int param_ii = 0;
     //兼容gpu上SbatchSize>1的情况
-    { 
-        layer_param << 0 << " ";
-        param_ii++;
-    }
+//    {
+//        layer_param << 0 << " ";
+//        param_ii++;
+//    }
     
     for(;param_ii < top_blob_shape_size;param_ii++) {
         layer_param << output_shape[param_ii] << " ";

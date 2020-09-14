@@ -47,6 +47,7 @@ Status CpuBinaryOpLayerAcc::Forward(const std::vector<Blob *> &inputs, const std
             input_shapes.push_back(inputs[inid]->GetBlobDesc().dims);
         }
     } else {
+#if 0
         DimsVector input_shape0 = inputs[0]->GetBlobDesc().dims;
         if (layer_param->weight_input_index == 0) {
             input_ptrs.push_back(layer_res->element_handle.force_to<void *>());
@@ -61,6 +62,11 @@ Status CpuBinaryOpLayerAcc::Forward(const std::vector<Blob *> &inputs, const std
             input_ptrs.push_back(layer_res->element_handle.force_to<void *>());
             input_shapes.push_back(layer_res->element_shape);
         }
+#endif
+        input_ptrs.push_back(inputs[0]->GetHandle().base);
+        input_shapes.push_back(inputs[0]->GetBlobDesc().dims);
+        input_ptrs.push_back(layer_res->element_handle.force_to<void*>());
+        input_shapes.push_back(layer_res->element_shape);
     }
     Status status = Calculate(inputs, input_ptrs, input_shapes, output);
     return status;

@@ -35,6 +35,18 @@ Status InnerProductLayer::InferOutputShape() {
     int axis = ip_param->axis;
     //    int M    = DimsVectorUtils::Count(input_blob->GetBlobDesc().dims, 0, axis);
     //    int K    = DimsVectorUtils::Count(input_blob->GetBlobDesc().dims, axis);
+    if (resource_) {
+        auto resource = dynamic_cast<InnerProductLayerResource*>(resource_);
+        auto weight_size = resource->weight_handle.GetDataCount();
+        auto K = weight_size / N;
+        auto input_dims = input_blob->GetBlobDesc().dims;
+        for (int i = 1; i <= input_dims.size(); ++i) {
+            if (input_dims[input_dims.size() - i] == K) {
+                axis = input_dims.size() - i;
+                break;
+            }
+        }
+    }
 
     output_blob->GetBlobDesc().dims = input_blob->GetBlobDesc().dims;
 

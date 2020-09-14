@@ -62,6 +62,13 @@ struct EltwiseLayerResource : public LayerResource {
     std::vector<int> element_shape;
 };
 
+struct BinaryLayerResource : public LayerResource {
+    // elements
+    RawBuffer element_handle;
+
+    std::vector<int> element_shape;
+};
+
 struct InnerProductLayerResource : public LayerResource {
     // weight buffer
     RawBuffer weight_handle;

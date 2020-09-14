@@ -25,9 +25,9 @@ Status CpuMatMulLayerAcc::Reshape(const std::vector<Blob *> &inputs, const std::
 }
 
 Status CpuMatMulLayerAcc::Forward(const std::vector<Blob *> &inputs, const std::vector<Blob *> &outputs) {
-    // Matrix A: (count, M, N)
-    // Matrix B: (count, N, K)
-    // Matrix C: (count, M, K)
+    // Matrix A: (count, M, K)
+    // Matrix B: (count, K, N)
+    // Matrix C: (count, M, N)
     auto param         = dynamic_cast<MatMulLayerParam *>(param_);
     int axis           = param->axis;
     auto matrix_a      = inputs[0];
@@ -37,8 +37,8 @@ Status CpuMatMulLayerAcc::Forward(const std::vector<Blob *> &inputs, const std::
     auto matrix_b_dims = matrix_b->GetBlobDesc().dims;
     int count          = DimsVectorUtils::Count(matrix_a_dims, 0, axis);
     int M              = matrix_a_dims[axis];
-    int N              = matrix_a_dims[axis + 1];
-    int K              = matrix_b_dims[axis + 1];
+    int K              = matrix_a_dims[axis + 1];
+    int N              = matrix_b_dims[axis + 1];
     if (matrix_a->GetBlobDesc().data_type == DATA_TYPE_FLOAT) {
         auto matrix_a_ptr = static_cast<float *>(matrix_a->GetHandle().base);
         auto matrix_b_ptr = static_cast<float *>(matrix_b->GetHandle().base);
@@ -46,11 +46,11 @@ Status CpuMatMulLayerAcc::Forward(const std::vector<Blob *> &inputs, const std::
         for (int c = 0; c < count; ++c) {
             for (int m = 0; m < M; ++m) {
                 float sum = 0;
-                for (int k = 0; k < K; ++k) {
-                    for (int n = 0; n < N; ++n) {
-                        sum += matrix_a_ptr[c * M * N + m * N + n] * matrix_b_ptr[c * N * K + n * K + k];
+                for (int n = 0; n < N; ++n) {
+                    for (int k = 0; k < K; ++k) {
+                        sum += matrix_a_ptr[c * M * K + m * K + k] * matrix_b_ptr[c * K * N + k * N + n];
                     }
-                    matrix_c_ptr[c * M * K + m * K + k] = sum;
+                    matrix_c_ptr[c * M * N + m * N + n] = sum;
                 }
             }
         }

@@ -12,12 +12,13 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-#include "tnn/layer/multidir_broadcast_layer.h"
+#include "tnn/layer/base_layer.h"
+#include "tnn/layer/binary_layer.h"
 
 namespace TNN_NS {
 
-DECLARE_MULTIDIR_BROADCAST_LAYER(Mul, LAYER_MUL);
+DECLARE_BINARY_LAYER(Mul, LAYER_MUL);
 
-REGISTER_MULTIDIR_BROADCAST_LAYER(Mul, LAYER_MUL);
+REGISTER_LAYER(Mul, LAYER_MUL);
 
 }  // namespace TNN_NS

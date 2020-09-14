@@ -30,12 +30,15 @@ Status MatMulLayer::InferOutputShape() {
     ASSERT(input_blobs_.size() == 2);
     auto param = dynamic_cast<MatMulLayerParam*>(param_);
     auto& output_dim = output_blobs_[0]->GetBlobDesc().dims;
+    output_dim.resize(4);
     auto matrix_a_dim   = input_blobs_[0]->GetBlobDesc().dims;
     auto matrix_b_dim   = input_blobs_[1]->GetBlobDesc().dims;
     int pad_index = matrix_a_dim.size();
-    for (int i = matrix_a_dim.size() - 1; i >= 0; ++i) {
+    for (int i = matrix_a_dim.size() - 1; i >= 0; --i) {
         if (matrix_a_dim[i] == matrix_b_dim[i] && matrix_a_dim[i] == 1) {
             pad_index -= 1;
+        } else {
+            break;
         }
     }
 	// input0:[1, 32, 64, 1]
