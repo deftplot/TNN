@@ -62,10 +62,6 @@ TEST_P(ConvLayerTest, ConvLayer) {
     int activation_type   = std::get<9>(GetParam());
     DeviceType dev        = ConvertDeviceType(FLAGS_dt);
 
-    if (((channel_per_group % 4) != 0) && DEVICE_METAL == dev) {
-        GTEST_SKIP();
-    }
-
     if (dtype == DATA_TYPE_HALF && DEVICE_ARM != dev) {
         GTEST_SKIP();
     }

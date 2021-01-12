@@ -36,10 +36,6 @@ bool BinaryLayerTest::InputParamCheck(const DataType& data_type, const DeviceTyp
     }
 #endif
 
-    if (batch > 1 && DEVICE_METAL == dev) {
-        return true;
-    }
-
     return false;
 }
 
