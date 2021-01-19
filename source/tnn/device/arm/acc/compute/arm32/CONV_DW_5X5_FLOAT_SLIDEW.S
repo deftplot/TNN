@@ -24,7 +24,9 @@ asm_function ConvDw5x5FloatSlideW
 //void ConvDw5x5FloatSlideW(float *dst_z,
 //                        float **cache_line,
 //                        const float* weight_z,
-//                        int dst_width)
+//                        int dst_width,
+//                        const float* bias,
+//                        int relu)
 
 dst      .req r0
 line0    .req r4
@@ -35,10 +37,15 @@ line4    .req r8
 weight   .req r2
 width    .req r3
 
-push {r4-r8, lr}
+push {r4-r10}
 
 //Auto Load:
 //r0:dst_z, r1:cache_line, r2:weight_z, r3: dst_width
+
+//Load from sp
+//r9:bias, r10:relu
+ldr r9, [sp, #28]
+ldr r10, [sp, #32]
 
 vpush {q4-q7}
 
@@ -204,9 +211,23 @@ vld1.32 {d12-d15}, [line0]!
     vld1.32  {d12-d15},  [line0]!
     vmla.f32 q14,  q10,  q2
     vmla.f32 q15,  q11,  q2
-    vst1.32  {d24-d27},  [dst]!
     vld1.32  {d4-d7},    [weight]!
     sub  width,   width, #4
+
+    cmp r10, #0
+    beq Store1_
+    vld1.32 {q8}, [r9]
+    veor q9, q9, q9
+    vadd.f32 q12, q12, q8
+    vadd.f32 q13, q13, q8
+    vadd.f32 q14, q14, q8
+    vadd.f32 q15, q15, q8
+    vmax.f32 q12, q12, q9
+    vmax.f32 q13, q13, q9
+    vmax.f32 q14, q14, q9
+    vmax.f32 q15, q15, q9
+Store1_:
+    vst1.32  {d24-d27},  [dst]!
     vst1.32  {d28-d31},  [dst]!
     cmp width, #4
     bge L4Loop
@@ -267,6 +288,14 @@ ble End
 
     vadd.f32 q12, q12, q13
     sub width, width, #1
+
+    cmp r10, #0
+    beq Store1
+    vld1.32 {q8}, [r9]
+    veor q9, q9, q9
+    vadd.f32 q12, q12, q8
+    vmax.f32 q12, q12, q9
+Store1:
     vst1.32 {d24-d25}, [dst]!
     cmp width, #1
     bge L1Loop
@@ -274,7 +303,7 @@ ble End
 End:
 
 vpop {q4-q7}
-pop {r4-r8, pc}
+pop {r4-r10}
 
 #endif
 #endif

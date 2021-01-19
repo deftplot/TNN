@@ -23,7 +23,9 @@ asm_function ConvDw3x3FloatSlideW
 //void ConvDw3x3FloatSlideW(float *dst_z,
 //                        float **cache_line,
 //                        const float* weight_z,
-//                        int dst_width)
+//                        int dst_width,
+//                        const float* bias,
+//                        int relu)
 
 dst      .req x0
 line0    .req x4
@@ -44,7 +46,10 @@ w_22      .req v16
 
 
 //Auto Load:
-//x0:dst_z, x1:cache_line, x2:weight_z, x3: dst_width
+//x0:dst_z, x1:cache_line, x2:weight_z, x3: dst_width, x4: bias_ptr, x9: relu
+ldr q24, [x4]
+eor v25.16b, v25.16b, v25.16b
+mov x9, x5
 
 cmp width, #0
 ble End
@@ -96,6 +101,10 @@ LoopDw:
     fmla v18.4s, v23.4s, w_21.4s
     fmla v17.4s, v23.4s, w_22.4s
 
+    cbz x9, Store1_
+    fadd v17.4s, v17.4s, v24.4s
+    fmax v17.4s, v17.4s, v25.4s
+Store1_:
     st1 {v17.4s}, [dst], #16
     subs width, width, #1
     mov v17.16b, v18.16b
@@ -109,6 +118,10 @@ ld1 {v23.4s}, [line2], #16
 fmla v17.4s, v21.4s, w_02.4s
 fmla v17.4s, v22.4s, w_12.4s
 fmla v17.4s, v23.4s, w_22.4s
+cbz x9, Store1
+fadd v17.4s, v17.4s, v24.4s
+fmax v17.4s, v17.4s, v25.4s
+Store1:
 st1 {v17.4s}, [dst], #16
 
 End:

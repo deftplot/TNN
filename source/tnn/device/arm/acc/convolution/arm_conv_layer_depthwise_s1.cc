@@ -132,6 +132,13 @@ Status ArmConvLayerDepthwiseS1::Exec(const std::vector<Blob *> &inputs, const st
 
     auto work_space = reinterpret_cast<T *>(context_->GetSharedWorkSpace(max_num_threads * workspace_per_thread));
 
+    int act_type = 0;
+    // only fp32 support fuse bias with relu
+    if (conv_param->activation_type == ActivationType_ReLU &&
+        data_type == DATA_TYPE_FLOAT) {
+        act_type = 1;
+    }
+
     /*
     [ATTENTION]
     data in workspace are dirty, must be clear first
@@ -146,6 +153,7 @@ Status ArmConvLayerDepthwiseS1::Exec(const std::vector<Blob *> &inputs, const st
             auto *dst_z                       = dst_ptr + dst_z_step * dz;
             auto *src_z                       = src_ptr + src_z_step * dz;
             const auto *weight_dz             = reinterpret_cast<float *>(k_param_->fil_ptr) + dz * weight_z_step;
+            const auto *bias_dz               = reinterpret_cast<float *>(k_param_->bias) + dz;
             int thread_id                     = OMP_TID_;
             auto thread_work_space            = work_space + thread_id * workspace_per_thread / data_byte_size;
             T *cache_line[MAX_CACHE_LINE_NUM] = {nullptr};
@@ -168,7 +176,7 @@ Status ArmConvLayerDepthwiseS1::Exec(const std::vector<Blob *> &inputs, const st
                 // load only one line every loop
                 memcpy(cache_line[conv_param->kernels[1] - 1] + pad_l * 4, src_y, k_param_->iw * 4 * data_byte_size);
                 // kernel func
-                SlideFunc_(dst_y, (void **)cache_line, weight_dz, k_param_->ow);
+                SlideFunc_(dst_y, (void **)cache_line, weight_dz, k_param_->ow, bias_dz, act_type);
 
                 src_y += k_param_->iw * 4;
                 dst_y += k_param_->ow * 4;
@@ -178,7 +186,7 @@ Status ArmConvLayerDepthwiseS1::Exec(const std::vector<Blob *> &inputs, const st
             for (int ky = pad_b; ky > 0; ky--) {
                 memset(cache_line[conv_param->kernels[1] - 1] + pad_l * 4, 0, k_param_->iw * 4 * data_byte_size);
                 // kernel func
-                SlideFunc_(dst_y, (void **)cache_line, weight_dz, k_param_->ow);
+                SlideFunc_(dst_y, (void **)cache_line, weight_dz, k_param_->ow, bias_dz, act_type);
 
                 dst_y += k_param_->ow * 4;
                 cache_lines_slide(cache_line, conv_param->kernels[1]);
@@ -186,7 +194,9 @@ Status ArmConvLayerDepthwiseS1::Exec(const std::vector<Blob *> &inputs, const st
         }
     }
 
-    PostExec<T>(outputs);
+    if (act_type == 0) {
+        PostExec<T>(outputs);
+    }
 
     return TNN_OK;
 }

@@ -40,7 +40,7 @@ public:
                             const std::vector<Blob *> &outputs);
 
 protected:
-    ConvDwSliceFunc  SlideFunc_ = nullptr;
+    ConvDwSliceFuncWithPost  SlideFunc_ = nullptr;
 
 };
 

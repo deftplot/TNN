@@ -188,6 +188,34 @@ void load_repack_A(T *dst, T *src, int width, int src_z_step, int ic4) {
     }
 }
 
+// only for testing performance
+template <typename T>
+void load_repack_A_lhs(T *dst, T *src, int width, int src_z_step, int ic4) {
+    int loop   = width / ARM_SGEMM_TILE_M;
+    int remain = width % ARM_SGEMM_TILE_M;
+
+    for (int c_i = 0; c_i < ic4; c_i++) {
+        auto src_z = src + c_i * src_z_step;
+        auto dst_z = dst + c_i * ARM_SGEMM_TILE_M * 4;
+        int db = 0;
+        for (; db < loop; db++) {
+            auto src_b = src_z + db * ARM_SGEMM_TILE_M * 4;
+            auto dst_b = dst_z + db * ARM_SGEMM_TILE_M * 4 * ic4;
+            repack_lane(src_b, dst_b);
+        }
+        if (remain > 0) {
+            auto src_b = src_z + db * ARM_SGEMM_TILE_M * 4;
+            auto dst_b = dst + c_i * remain * 4 + db * ARM_SGEMM_TILE_M * 4 * ic4;
+            memcpy(dst_b, src_b, remain * 4 * sizeof(T));
+            for (int b_i = 0; b_i < remain / 4; b_i++) {
+                auto src_r = src_b + b_i * 4 * 4;
+                auto dst_r = dst_b + b_i * 4 * 4;
+                _repack_4(src_r, dst_r);
+            }
+        }
+    }
+}
+
 template <typename T>
 void sgemm_repack_lhs(T *dst, T *src, float *weight, int ic4, int oc4, int plane_num, int dst_z_step, int a_block,
                       int b_block, T *work_space, float *bias, int act_type, bool fast_post) {

@@ -53,6 +53,7 @@ struct ArmKernelParam {
 
 typedef void (*PostFunc)(void* dst, const void* bias, long area, long oc4);
 typedef void (*ConvDwSliceFunc)(void* dst_z, void** cache_line, const void* weight_z, long dst_width);
+typedef void (*ConvDwSliceFuncWithPost)(void* dst_z, void** cache_line, const void* weight_z, long dst_width, const void* bias, long relu);
 
 template <typename T1, typename T2 = float>
 void PostAddBias(void* dst, const void* bias, long area, long oc4);
@@ -146,10 +147,10 @@ void GEMM_FLOAT_N4(float* dst, const float* src, const float* weight, long src_d
 void GEMM_BFP16_N4(bfp16_t* dst, const bfp16_t* src, const float* weight, long src_depth_quad, long dst_step,
                    long dst_depth_quad, long width, float* bias, long relu);
 
-void ConvDw3x3FloatSlideW(void* dst_z, void** cache_line, const void* weight_z, long dst_width);
-void ConvDw3x3Bfp16SlideW(void* dst_z, void** cache_line, const void* weight_z, long dst_width);
-void ConvDw5x5FloatSlideW(void* dst_z, void** cache_line, const void* weight_z, long dst_width);
-void ConvDw5x5Bfp16SlideW(void* dst_z, void** cache_line, const void* weight_z, long dst_width);
+void ConvDw3x3FloatSlideW(void* dst_z, void** cache_line, const void* weight_z, long dst_width, const void* bias, long relu);
+void ConvDw3x3Bfp16SlideW(void* dst_z, void** cache_line, const void* weight_z, long dst_width, const void* bias, long relu);
+void ConvDw5x5FloatSlideW(void* dst_z, void** cache_line, const void* weight_z, long dst_width, const void* bias, long relu);
+void ConvDw5x5Bfp16SlideW(void* dst_z, void** cache_line, const void* weight_z, long dst_width, const void* bias, long relu);
 
 #ifdef __cplusplus
 }

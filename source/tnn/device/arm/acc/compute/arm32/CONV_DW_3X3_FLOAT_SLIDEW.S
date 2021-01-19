@@ -24,7 +24,9 @@ asm_function ConvDw3x3FloatSlideW
 //void ConvDw3x3FloatSlideW(float *dst_z,
 //                        float **cache_line,
 //                        const float* weight_z,
-//                        int dst_width)
+//                        int dst_width,
+//                        const float* bias,
+//                        int relu)
 
 dst      .req r0
 line0    .req r4
@@ -43,10 +45,15 @@ w_20      .req q6
 w_21      .req q7
 w_22      .req q8
 
-push {r4-r6, lr}
+push {r4-r8}
 
 //Auto Load:
 //r0:dst_z, r1:cache_line, r2:weight_z, r3: dst_width
+
+//Load from sp
+//r7:bias, r8:relu
+ldr r7, [sp, #20]
+ldr r8, [sp, #24]
 
 vpush {q4-q7}
 
@@ -74,6 +81,8 @@ vmla.f32 q10, q15, w_10
 vmla.f32 q9, q15, w_11
 vmla.f32 q10, q11, w_20
 vmla.f32 q9, q11, w_21
+//load bias
+vld1.32 {q15}, [r7]
 
 subs width, width, #1
 beq LoopDwEnd
@@ -94,6 +103,12 @@ LoopDw:
     vmla.f32 q10, q13, w_21
     vmla.f32 q9, q13, w_22
 
+    cmp r8, #0
+    beq Store1_
+    veor q13, q13, q13
+    vadd.f32 q9, q9, q15
+    vmax.f32 q9, q9, q13
+Store1_:
     vst1.32 {q9}, [dst]!
     subs width, width, #1
     vmov q9, q10
@@ -107,12 +122,18 @@ vld1.f32 {q13}, [line2]!
 vmla.f32 q9, q11, w_02
 vmla.f32 q9, q12, w_12
 vmla.f32 q9, q13, w_22
+cmp r8, #0
+beq Store1
+veor q13, q13, q13
+vadd.f32 q9, q9, q15
+vmax.f32 q9, q9, q13
+Store1:
 vst1.32 {q9}, [dst]!
 
 End:
 
 vpop {q4-q7}
-pop {r4-r6, pc}
+pop {r4-r8}
 
 #endif
 #endif
