@@ -59,10 +59,25 @@ Status Instance::Init(std::shared_ptr<AbstractModelInterpreter> interpreter, Inp
         auto const_folder = std::make_shared<ConstFolder>();
         auto status = const_folder->Init(net_config_, model_config_, interpreter_.get(), min_inputs_shape, max_inputs_shape);
         RETURN_ON_NEQ(status, TNN_OK);
-        
-        status = const_folder->Forward();
-        RETURN_ON_NEQ(status, TNN_OK);
-        
+
+        if(min_inputs_shape.size() != 0) {
+             status = const_folder->Reshape(min_inputs_shape);
+             RETURN_ON_NEQ(status, TNN_OK);
+             status = const_folder->Forward();
+             RETURN_ON_NEQ(status, TNN_OK);
+             auto min_constant_map = default_interpreter->GetNetResource()->constant_map;
+             default_interpreter->GetNetResource()->min_constant_map = min_constant_map;
+             status = const_folder->Reshape(max_inputs_shape);
+             RETURN_ON_NEQ(status, TNN_OK);
+             status = const_folder->Forward();
+             RETURN_ON_NEQ(status, TNN_OK);
+        } else {
+            status = const_folder->Forward();
+            RETURN_ON_NEQ(status, TNN_OK);
+            auto max_constant_map = default_interpreter->GetNetResource()->constant_map;
+            default_interpreter->GetNetResource()->min_constant_map = max_constant_map;
+        }       
+ 
         const_folder_ = const_folder;
     }
 
