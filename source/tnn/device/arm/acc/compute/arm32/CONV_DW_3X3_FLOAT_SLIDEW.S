@@ -45,15 +45,15 @@ w_20      .req q6
 w_21      .req q7
 w_22      .req q8
 
-push {r4-r8}
+push {r4-r8, lr}
 
 //Auto Load:
 //r0:dst_z, r1:cache_line, r2:weight_z, r3: dst_width
 
 //Load from sp
 //r7:bias, r8:relu
-ldr r7, [sp, #20]
-ldr r8, [sp, #24]
+ldr r7, [sp, #24]
+ldr r8, [sp, #28]
 
 vpush {q4-q7}
 
@@ -133,7 +133,7 @@ vst1.32 {q9}, [dst]!
 End:
 
 vpop {q4-q7}
-pop {r4-r8}
+pop {r4-r8, pc}
 
 #endif
 #endif

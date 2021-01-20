@@ -37,15 +37,15 @@ line4    .req r8
 weight   .req r2
 width    .req r3
 
-push {r4-r10}
+push {r4-r10, lr}
 
 //Auto Load:
 //r0:dst_z, r1:cache_line, r2:weight_z, r3: dst_width
 
 //Load from sp
 //r9:bias, r10:relu
-ldr r9, [sp, #28]
-ldr r10, [sp, #32]
+ldr r9, [sp, #32]
+ldr r10, [sp, #36]
 
 vpush {q4-q7}
 
@@ -303,7 +303,7 @@ Store1:
 End:
 
 vpop {q4-q7}
-pop {r4-r10}
+pop {r4-r10, pc}
 
 #endif
 #endif
