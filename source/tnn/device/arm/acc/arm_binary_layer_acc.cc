@@ -75,6 +75,8 @@ Status ArmBinaryLayerAcc::BinaryFunc(Tout *output_ptr, Tin1 *input0_ptr, Tin2 *i
 
     int count      = dims[0] * ROUND_UP(dims[1], 4) * dims[2] * dims[3];
     int count_quad = UP_DIV(count, 4);
+    int b_stride   = ROUND_UP(dims[1], 4) * dims[2] * dims[3];
+    int hw_count   = dims[2] * dims[3];
 
     if (type == BroadcastTypeNormal) {
         for (int n = 0; n < count_quad; n++) {
@@ -89,19 +91,38 @@ Status ArmBinaryLayerAcc::BinaryFunc(Tout *output_ptr, Tin1 *input0_ptr, Tin2 *i
     if (swap_flag) {
         if (type == BroadcastTypeSingle) {
             // broadcast single
+            auto v2 = Float4(_input1[0]);
             for (int n = 0; n < count_quad; n++) {
                 auto v1 = Float4::load(_input0 + n * 4);
-                auto v2 = Float4(_input1[0]);
                 Float4::save(output_ptr + n * 4, _Operator(v2, v1));
             }
         } else if (type == BroadcastTypeChannel) {
             // broadcast channel
-            for (int n = 0; n < count_quad; n++) {
-                int b               = n / (dims[2] * dims[3] * UP_DIV(dims[1], 4));
-                int channel_4_index = n / (dims[2] * dims[3]) - b * UP_DIV(dims[1], 4);
-                auto v1             = Float4::load(_input0 + n * 4);
-                auto v2             = Float4::load(_input1 + channel_4_index * 4);
-                Float4::save(output_ptr + n * 4, _Operator(v2, v1));
+            for (int b = 0; b < dims[0]; b++) {
+                auto _input0_b = _input0 + b * b_stride;
+                auto output_b  = output_ptr + b * b_stride;
+                for (int ic = 0; ic < ROUND_UP(dims[1], 4); ic += 4) {
+                    auto v2 = Float4::load(_input1 + ic);
+                    auto _input0_ic = _input0_b + ic * hw_count;
+                    auto output_ic  = output_b + ic * hw_count;
+                    int hw = 0;
+                    for (; hw + 3 < hw_count; hw += 4) {
+                        auto _input0_hw = _input0_ic + hw * 4;
+                        auto _output_hw = output_ic + hw * 4;
+                        auto v10 = Float4::load(_input0_hw);
+                        auto v11 = Float4::load(_input0_hw + 4);
+                        auto v12 = Float4::load(_input0_hw + 8);
+                        auto v13 = Float4::load(_input0_hw + 12);
+                        Float4::save(_output_hw,      _Operator(v2, v10));
+                        Float4::save(_output_hw + 4,  _Operator(v2, v11));
+                        Float4::save(_output_hw + 8,  _Operator(v2, v12));
+                        Float4::save(_output_hw + 12, _Operator(v2, v13));
+                    }
+                    for (; hw < hw_count; hw++) {
+                        auto v1 = Float4::load(_input0_ic + hw * 4);
+                        Float4::save(output_ic + hw * 4, _Operator(v2, v1));
+                    }
+                }
             }
         } else if (type == BroadcastTypeElement) {
             // broadcast chw
@@ -134,19 +155,38 @@ Status ArmBinaryLayerAcc::BinaryFunc(Tout *output_ptr, Tin1 *input0_ptr, Tin2 *i
     } else {
         if (type == BroadcastTypeSingle) {
             // broadcast single
+            auto v2 = Float4(_input1[0]);
             for (int n = 0; n < count_quad; n++) {
                 auto v1 = Float4::load(_input0 + n * 4);
-                auto v2 = Float4(_input1[0]);
                 Float4::save(output_ptr + n * 4, _Operator(v1, v2));
             }
         } else if (type == BroadcastTypeChannel) {
             // broadcast channel
-            for (int n = 0; n < count_quad; n++) {
-                int b               = n / (dims[2] * dims[3] * UP_DIV(dims[1], 4));
-                int channel_4_index = n / (dims[2] * dims[3]) - b * UP_DIV(dims[1], 4);
-                auto v1             = Float4::load(_input0 + n * 4);
-                auto v2             = Float4::load(_input1 + channel_4_index * 4);
-                Float4::save(output_ptr + n * 4, _Operator(v1, v2));
+            for (int b = 0; b < dims[0]; b++) {
+                auto _input0_b = _input0 + b * b_stride;
+                auto output_b  = output_ptr + b * b_stride;
+                for (int ic = 0; ic < ROUND_UP(dims[1], 4); ic += 4) {
+                    auto v2 = Float4::load(_input1 + ic);
+                    auto _input0_ic = _input0_b + ic * hw_count;
+                    auto output_ic  = output_b + ic * hw_count;
+                    int hw = 0;
+                    for (; hw + 3 < hw_count; hw += 4) {
+                        auto _input0_hw = _input0_ic + hw * 4;
+                        auto _output_hw = output_ic + hw * 4;
+                        auto v10 = Float4::load(_input0_hw);
+                        auto v11 = Float4::load(_input0_hw + 4);
+                        auto v12 = Float4::load(_input0_hw + 8);
+                        auto v13 = Float4::load(_input0_hw + 12);
+                        Float4::save(_output_hw,      _Operator(v10, v2));
+                        Float4::save(_output_hw + 4,  _Operator(v11, v2));
+                        Float4::save(_output_hw + 8,  _Operator(v12, v2));
+                        Float4::save(_output_hw + 12, _Operator(v13, v2));
+                    }
+                    for (; hw < hw_count; hw++) {
+                        auto v1 = Float4::load(_input0_ic + hw * 4);
+                        Float4::save(output_ic + hw * 4, _Operator(v1, v2));
+                    }
+                }
             }
         } else if (type == BroadcastTypeElement) {
             // broadcast chw
