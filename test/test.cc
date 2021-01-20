@@ -94,7 +94,7 @@ namespace test {
         }
  
         if (CheckResult("init tnn", ret)) {
-            auto instance = net.CreateInst(network_config, ret, max_input_shape, min_input_shape);
+            auto instance = net.CreateInst(network_config, ret, min_input_shape, max_input_shape);
             for(auto& element : input_shape) {
                printf("element name: %s \n", element.first.c_str());
                DimsVector& dims = element.second;
