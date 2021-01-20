@@ -73,16 +73,28 @@ namespace test {
         Status ret = net.Init(model_config);
         InputShapesMap input_shape;
         const int max_batch = 3;
-        net.GetModelInputShapesMap(input_shape);     
-        for(auto& element : input_shape) {
+        const int min_batch = 1;
+        net.GetModelInputShapesMap(input_shape); 
+
+        InputShapesMap max_input_shape = input_shape;
+        InputShapesMap min_input_shape = input_shape;
+
+        for(auto& element : max_input_shape) {
            printf("element name: %s \n", element.first.c_str());
            DimsVector& dims = element.second;
            dims[0] = max_batch;
            printf("dims[0]: %d, second[0]: %d \n", dims[0], element.second[0]);
         }
+
+        for(auto& element : min_input_shape) {
+           printf("element name: %s \n", element.first.c_str());
+           DimsVector& dims = element.second;
+           dims[0] = min_batch;
+           printf("dims[0]: %d, second[0]: %d \n", dims[0], element.second[0]);
+        }
  
         if (CheckResult("init tnn", ret)) {
-            auto instance = net.CreateInst(network_config, ret, input_shape);
+            auto instance = net.CreateInst(network_config, ret, max_input_shape, min_input_shape);
             for(auto& element : input_shape) {
                printf("element name: %s \n", element.first.c_str());
                DimsVector& dims = element.second;
