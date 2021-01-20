@@ -258,6 +258,7 @@ Status TensorRTNetwork_::Reshape(const InputShapesMap &inputs) {
     for (auto iter : inputs) {
         int index = m_trt_engine->getBindingIndex(iter.first.c_str());
         auto dims = iter.second;
+        printf("tensorrt dims[0]: %d \n", dims[0]);
         nvinfer1::Dims inputDims = ConvertToTRTDims(dims);
         auto ret = m_trt_context->setBindingDimensions(index, inputDims);
         if (!ret) {
@@ -461,6 +462,7 @@ Status TensorRTNetwork_::InitWithoutCache(BlobMap &inputs, BlobMap &outputs, std
         //    if (i != 1)
         //        min_dims.d[i] = 1;
         }
+        min_dims.d[0] = 1;
         auto opt_dims = max_dims;
         profile->setDimensions(desc.name.c_str(), OptProfileSelector::kMIN, min_dims);
         profile->setDimensions(desc.name.c_str(), OptProfileSelector::kOPT, opt_dims);

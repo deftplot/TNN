@@ -65,17 +65,35 @@ namespace test {
         ModelConfig model_config     = GetModelConfig();
         NetworkConfig network_config = GetNetworkConfig();
 
-        InputShapesMap input_shape = GetInputShapesMap();
+//        InputShapesMap input_shape = GetInputShapesMap();
 
         srand(102);
 
         TNN net;
         Status ret = net.Init(model_config);
+        InputShapesMap input_shape;
+        const int max_batch = 3;
+        net.GetModelInputShapesMap(input_shape);     
+        for(auto& element : input_shape) {
+           printf("element name: %s \n", element.first.c_str());
+           DimsVector& dims = element.second;
+           dims[0] = max_batch;
+           printf("dims[0]: %d, second[0]: %d \n", dims[0], element.second[0]);
+        }
+ 
         if (CheckResult("init tnn", ret)) {
             auto instance = net.CreateInst(network_config, ret, input_shape);
+            for(auto& element : input_shape) {
+               printf("element name: %s \n", element.first.c_str());
+               DimsVector& dims = element.second;
+               dims[0] = 2;
+               printf("dims[0]: %d, second[0]: %d \n", dims[0], element.second[0]);
+            }
+            instance->Reshape(input_shape);
             if (!CheckResult("create instance", ret)) {
                 return ret;
             }
+            
             instance->SetCpuNumThreads(std::max(FLAGS_th, 1));
 
             //get blob
@@ -380,18 +398,29 @@ namespace test {
             auto name = iter.first;
             auto mat = iter.second;
             void* mat_data = mat->GetData();
-            int data_count     = DimsVectorUtils::Count(mat->GetDims());
+            auto dims = mat->GetDims();
+            int data_count     = DimsVectorUtils::Count(mat->GetDims(), 1);
             auto mat_type = mat->GetMatType();
             if (FLAGS_ip.empty()) {
                 for (int i = 0; i < data_count; i++) {
                     if (mat_type == NCHW_FLOAT) {
                         reinterpret_cast<float*>(mat_data)[i] = (float)(rand() % 256 - 128) / 128.0f;
+                        for(int j = 1; j < dims[0]; ++j) {
+                            reinterpret_cast<float*>(mat_data)[i + j * data_count] = reinterpret_cast<float*>(mat_data)[i];
+                        }
                     } else if (mat_type == NC_INT32) {
                         reinterpret_cast<int32_t*>(mat_data)[i] = rand() % 2;
+                        for(int j = 1; j < dims[0]; ++j) {
+                            reinterpret_cast<int32_t*>(mat_data)[i + j * data_count] = reinterpret_cast<int32_t*>(mat_data)[i];
+                        }
                     } else {
                         reinterpret_cast<uint8_t*>(mat_data)[i] = (rand() % 256);
+                        for(int j = 1; j < dims[0]; ++j) {
+                            reinterpret_cast<int32_t*>(mat_data)[i + j * data_count] = reinterpret_cast<int32_t*>(mat_data)[i];
+                        }
                     }
                 }
+                
             } else {
                 LOGD("input path: %s\n", FLAGS_ip.c_str());
                 std::ifstream input_stream(FLAGS_ip);
@@ -472,14 +501,23 @@ namespace test {
         for (auto output : outputs) {
             auto mat  = output.second;
             int data_count     = DimsVectorUtils::Count(mat->GetDims());
+            int batch_data_count = DimsVectorUtils::Count(mat->GetDims(), 1);
             if (mat->GetMatType() == NC_INT32 ) {
                 int * data = reinterpret_cast<int*>(mat->GetData());
                 for (int c = 0; c < data_count; ++c) {
+                    int base_c = c % batch_data_count;
+                    if(data[base_c] != data[c]) {
+                        printf("batch equal error base: %d, data: %d \n", data[base_c], data[c]);
+                    }
                     f << data[c] << std::endl;
                 }
             } else {
                 float* data = reinterpret_cast<float*>(mat->GetData());
                 for (int c = 0; c < data_count; ++c) {
+                    int base_c = c % batch_data_count;
+                    if(data[base_c] != data[c]) {
+                        printf("batch equal error base: %f, data: %f \n", data[base_c], data[c]);
+                    }
                     f << std::fixed << std::setprecision(6) << data[c] << std::endl;
                 }
             }

@@ -55,6 +55,9 @@ Status TNN::GetModelInputShapesMap(InputShapesMap& shapes_map) {
 }
 
 std::shared_ptr<Instance> TNN::CreateInst(NetworkConfig& config, Status& status, InputShapesMap inputs_shape) {
+    for(auto element : inputs_shape) {
+        printf("element: %d \n", element.second[0]);
+    }
     if (!impl_) {
         status = Status(TNNERR_NET_ERR, "tnn impl_ is nil");
         return nullptr;
