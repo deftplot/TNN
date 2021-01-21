@@ -4,8 +4,8 @@ set -e
 
 ci_type=$1
 
-git fetch origin master:master
-CHANGED_FILES=`git diff --name-only master`
+git fetch origin master:ci_ref_origin_master
+CHANGED_FILES=`git diff --name-only ci_ref_origin_master`
 echo -e "\n>> Changed Files:"
 for CHANGED_FILE in $CHANGED_FILES; do
   echo ${CHANGED_FILE}
