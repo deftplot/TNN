@@ -97,9 +97,13 @@ Status BaseLayer::InferOutputShape(bool ignore_error) {
         if (const_resource == nullptr || const_resource->find(name) == const_resource->end()) {
             continue;
         }
-        
-        iter->GetBlobDesc().dims = (*const_resource)[name]->GetBufferDims();
         iter->GetBlobDesc().data_type = (*const_resource)[name]->GetDataType();
+        
+        //only DATA_FLAG_CHANGE_NEVER read dims and type from const resource
+        //blob with flag DATA_FLAG_CHANGE_IF_SHAPE_DIFFER may change dims in runtime
+        if (DataFlagUtils::ChangeStatus(iter->flag) == DATA_FLAG_CHANGE_NEVER) {
+            iter->GetBlobDesc().dims = (*const_resource)[name]->GetBufferDims();
+        }
     }
     
     //
@@ -137,9 +141,15 @@ Status BaseLayer::InferOutputDataType() {
     }
     
     for (auto iter : output_blobs_) {
-        if (runtime_model_ == RUNTIME_MODE_NORMAL &&
-            const_resource != nullptr && const_resource->find(iter->GetBlobDesc().name) != const_resource->end()) {
-            flag = flag & 0x0000FFFF;
+        if (runtime_model_ == RUNTIME_MODE_NORMAL) {
+            if (const_resource != nullptr && const_resource->find(iter->GetBlobDesc().name) != const_resource->end()) {
+                flag = flag & 0x0000FFFF;
+            }
+        } else {
+            //allocate output blob of const layer in const folding
+            if (DataFlagUtils::ChangeStatus(flag) != DATA_FLAG_CHANGE_ALWAYS) {
+                flag = flag | DATA_FLAG_ALLOCATE_IN_FORWARD;
+            }
         }
         iter->flag = flag;
     }

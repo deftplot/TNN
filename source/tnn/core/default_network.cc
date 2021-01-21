@@ -100,7 +100,7 @@ Status DefaultNetwork::Init(NetworkConfig &net_config, ModelConfig &model_config
      * The optimization process may change the network structure accoundingly.
      * eg. fuse conv+bn, conv+relu.
      */
-    {
+    if (runtime_model_ == RUNTIME_MODE_NORMAL) {
         // use mutex to protect net_resource and net_structure in multi-thread
         std::unique_lock<std::mutex> lck(optimize_mtx_);
         ret = optimizer::NetOptimizerManager::Optimize(net_structure, net_resource, net_config);
@@ -504,8 +504,8 @@ Status DefaultNetwork::Forward() {
 #endif  // DUMP_INPUT_BLOB
             
             status = layer->Forward();
-            
             LOGD("layer name: %s, forward result: %d \n", layer->GetLayerName().c_str(), (int)status);
+            LOGD("Output Shape: [%s]\n", layer->GetOutputBlobs()[0]->GetBlobDesc().description().c_str());
             if (status != TNN_OK) {
                 LOGE("Forward error %s, exit\n", status.description().c_str());
                 return status;
@@ -611,10 +611,10 @@ std::string DefaultNetwork::GenerateCacheFileName(ModelConfig &model_config) {
 
 Status DefaultNetwork::ReshapeLayers() {
     for (auto cur_layer : layers_) {
-        Status ret = cur_layer->Reshape();
-        if (ret != TNN_OK) {
-            return ret;
-        }
+        auto status = cur_layer->Reshape();
+        RETURN_ON_NEQ(status, TNN_OK);
+        //Note output shape may not change after reshape for const folder, but will do change after forword because shape may be determined at rumtime
+        LOGD("ReshapeLayers Output Shape: [%s]\n", cur_layer->GetOutputBlobs()[0]->GetBlobDesc().description().c_str());
     }
     return TNN_OK;
 }
