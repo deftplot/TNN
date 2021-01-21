@@ -4,8 +4,15 @@ set -e
 
 ci_type=$1
 
-git fetch origin master:ci_ref_origin_master
-CHANGED_FILES=`git diff --name-only ci_ref_origin_master`
+BRANCH=`git symbolic-ref --short -q HEAD`
+echo "\n>> Current Branch:" ${BRANCH}
+if [[ ${BRANCH} == 'master' ]]; then
+  echo "On branch master, continuing with build."
+  exit 0
+fi
+
+git fetch origin master:master
+CHANGED_FILES=`git diff --name-only master`
 echo -e "\n>> Changed Files:"
 for CHANGED_FILE in $CHANGED_FILES; do
   echo ${CHANGED_FILE}
