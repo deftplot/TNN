@@ -24,6 +24,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <unistd.h>
 
 #include "test/flags.h"
 #include "test/test_utils.h"
@@ -72,7 +73,7 @@ namespace test {
         TNN net;
         Status ret = net.Init(model_config);
         InputShapesMap input_shape;
-        const int max_batch = 3;
+        const int max_batch = 20;
         const int min_batch = 1;
         net.GetModelInputShapesMap(input_shape); 
 
@@ -95,13 +96,6 @@ namespace test {
  
         if (CheckResult("init tnn", ret)) {
             auto instance = net.CreateInst(network_config, ret, min_input_shape, max_input_shape);
-            for(auto& element : input_shape) {
-               printf("element name: %s \n", element.first.c_str());
-               DimsVector& dims = element.second;
-               dims[0] = 2;
-               printf("dims[0]: %d, second[0]: %d \n", dims[0], element.second[0]);
-            }
-            instance->Reshape(input_shape);
             if (!CheckResult("create instance", ret)) {
                 return ret;
             }
@@ -153,6 +147,7 @@ namespace test {
  
             Timer timer(model_name + " - " + FLAGS_dt);
 
+            int j = 0;
             for (int i = 0; i < FLAGS_ic; ++i) {
                 timer.Start();
                 for(auto element : input_converters_map) {
@@ -163,6 +158,20 @@ namespace test {
                         return ret;
                     }
                 }
+                ++j;
+                if(j > 10) {
+                    j = 1;
+                }
+                usleep(3 * 1000 * 1000);
+                for(auto& element : input_shape) {
+                    printf("element name: %s \n", element.first.c_str());
+                    DimsVector& dims = element.second;
+                    dims[0] = j;
+                    printf("dims[0]: %d, second[0]: %d \n", dims[0], element.second[0]);
+                }
+                instance->Reshape(input_shape);
+ 
+
 #if (DUMP_INPUT_BLOB || DUMP_OUTPUT_BLOB)
                 ret = instance->Forward();
 #else
