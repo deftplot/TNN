@@ -73,7 +73,7 @@ namespace test {
         TNN net;
         Status ret = net.Init(model_config);
         InputShapesMap input_shape;
-        const int max_batch = 20;
+        const int max_batch = 4;
         const int min_batch = 1;
         net.GetModelInputShapesMap(input_shape); 
 
@@ -147,19 +147,11 @@ namespace test {
  
             Timer timer(model_name + " - " + FLAGS_dt);
 
-            int j = 0;
+            int j = 1;
             for (int i = 0; i < FLAGS_ic; ++i) {
                 timer.Start();
-                for(auto element : input_converters_map) {
-                    auto name = element.first;
-                    auto blob_converter = element.second;
-                    ret = blob_converter->ConvertFromMatAsync(*input_mat_map[name], input_params_map[name], command_queue);
-                    if (!CheckResult("ConvertFromMat", ret)) {
-                        return ret;
-                    }
-                }
                 ++j;
-                if(j > 10) {
+                if(j > max_batch) {
                     j = 1;
                 }
                 usleep(3 * 1000 * 1000);
@@ -170,13 +162,26 @@ namespace test {
                     printf("dims[0]: %d, second[0]: %d \n", dims[0], element.second[0]);
                 }
                 instance->Reshape(input_shape);
- 
+             
+                MatMap input_mat_map = CreateBlobMatMap(input_blob_map, FLAGS_it);
+                InitInputMatMap(input_mat_map);
+
+                for(auto element : input_converters_map) {
+                    auto name = element.first;
+                    auto blob_converter = element.second;
+                    ret = blob_converter->ConvertFromMatAsync(*input_mat_map[name], input_params_map[name], command_queue);
+                    if (!CheckResult("ConvertFromMat", ret)) {
+                        return ret;
+                    }
+                }
 
 #if (DUMP_INPUT_BLOB || DUMP_OUTPUT_BLOB)
                 ret = instance->Forward();
 #else
                 ret = instance->ForwardAsync(nullptr);
 #endif
+
+                output_mat_map = CreateBlobMatMap(output_blob_map, 0);
                 output_converters_map = CreateBlobConverterMap(output_blob_map);
                 output_params_map = CreateConvertParamMap(output_mat_map);
                 if (!CheckResult("Forward", ret)) {
@@ -346,6 +351,7 @@ namespace test {
 
     NetworkConfig GetNetworkConfig() {
         NetworkConfig config;
+        config.device_id = 1;
         // Precision : AUTO for float computing.
         config.precision = ConvertPrecision(FLAGS_pr);
 
