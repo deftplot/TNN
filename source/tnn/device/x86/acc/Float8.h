@@ -14,6 +14,9 @@
 
 #ifndef Float8_hpp
 #define Float8_hpp
+
+#include <stdint.h>
+
 #include "tnn/core/macro.h"
 #include "tnn/device/x86/x86_common.h"
 #ifdef __AVX2__

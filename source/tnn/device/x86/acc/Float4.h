@@ -14,6 +14,9 @@
 
 #ifndef Float4_hpp
 #define Float4_hpp
+
+#include <stdint.h>
+
 #include "tnn/core/macro.h"
 #include "tnn/device/x86/x86_common.h"
 #include "tnn/device/x86/acc/sse_mathfun.h"
