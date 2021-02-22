@@ -3,7 +3,7 @@
 
 ## 简介
 
-TNN：由腾讯优图实验室打造，移动端高性能、轻量级推理框架，同时拥有跨平台、高性能、模型压缩、代码裁剪等众多突出优势。TNN框架在原有Rapidnet、ncnn框架的基础上进一步加强了移动端设备的支持以及性能优化，同时也借鉴了业界主流开源框架高性能和良好拓展性的优点。目前TNN已经在手Q、微视、P图等应用中落地，欢迎大家参与协同共建，促进TNN推理框架进一步完善。
+TNN：由腾讯优图实验室开源的高性能、轻量级推理框架，同时拥有跨平台、高性能、模型压缩、代码裁剪等众多突出优势。TNN框架在原有Rapidnet、ncnn框架的基础上进一步加强了对移动端设备的支持和性能优化，扩充了对NPU，X86,  NV GPU的支持，同时也借鉴了业界主流开源框架高性能和良好拓展性的优点。目前TNN已经在手Q、微视、P图，腾讯云等应用中落地，欢迎大家参与协同共建，促进TNN推理框架进一步完善。
 
 
 ## 效果示例
@@ -17,17 +17,14 @@ TNN：由腾讯优图实验室打造，移动端高性能、轻量级推理框�
     <tr>
         <td>
             <a href=https://github.com/darrenyao87/tnn-models/tree/master/model/blazeface><img src=https://raw.githubusercontent.com/darrenyao87/tnn-models/master/doc/demo/face_detection.gif height=320></src> </a> <br>
-            iOS ✅ Android ✅ <br>
             <a href=https://github.com/darrenyao87/tnn-models/tree/master/model/blazeface>模型链接</a>
         </td>
         <td>
             <a href=https://github.com/darrenyao87/tnn-models/tree/master/model/yolov5><img src=https://raw.githubusercontent.com/darrenyao87/tnn-models/master/doc/demo/object-detection.gif height=320></src> </a> <br>
-            iOS ✅ Android ✅ <br>
             <a href=https://github.com/darrenyao87/tnn-models/tree/master/model/yolov5>模型链接</a>
         </td>
         <td>
             <a href=https://github.com/darrenyao87/tnn-models/tree/master/model/youtu_face_alignment><img src=https://raw.githubusercontent.com/darrenyao87/tnn-models/master/doc/demo/face_alignment.gif height=320></src> </a> <br>
-            iOS ✅ Android ✅ <br>
             <a href=https://github.com/darrenyao87/tnn-models/tree/master/model/youtu_face_alignment>模型链接</a>
         </td>
     </tr>
@@ -39,17 +36,14 @@ TNN：由腾讯优图实验室打造，移动端高性能、轻量级推理框�
     <tr>
         <td>
             <a href=https://github.com/darrenyao87/tnn-models/tree/master/model/hair_segmentation><img src=https://raw.githubusercontent.com/darrenyao87/tnn-models/master/doc/demo/hair_seg_red.gif height=320></src> </a> <br>
-            iOS ✅ Android ✅ <br>
             <a href=https://github.com/darrenyao87/tnn-models/tree/master/model/hair_segmentation>模型链接</a>
         </td>
         <td>
             <a href=https://github.com/darrenyao87/tnn-models/tree/master/model/skeleton><img src=https://raw.githubusercontent.com/darrenyao87/tnn-models/master/doc/demo/skeleton_guangliu.gif height=320></src> </a> <br>
-            iOS ✅ Android ✅ <br>
             <a href=https://github.com/darrenyao87/tnn-models/tree/master/model/skeleton>模型链接</a>
         </td>
         <td>
             <a href=https://github.com/darrenyao87/tnn-models/tree/master/model/blazepose><img src=https://raw.githubusercontent.com/darrenyao87/tnn-models/master/doc/demo/skeleton_blazepose.gif height=320></src> </a> <br>
-            iOS ✅ Android ✅ <br>
             <a href=https://github.com/darrenyao87/tnn-models/tree/master/model/blazepose>模型链接</a>
         </td>
     </tr>
@@ -61,21 +55,21 @@ TNN：由腾讯优图实验室打造，移动端高性能、轻量级推理框�
 1. 第一步是把训练好的模型转换成TNN的模型，为此我们提供了丰富的工具来帮助你完成这一步，无论你使用的是 TensorFlow、PyTorch、或者 Caffe，都可以轻松完成转换。
 详细的手把手教程可以参见这里[如何转换模型](doc/cn/user/convert.md)。
 
-2. 当你完成了模型的转换，第二步就是编译目标平台的 TNN 引擎了，你可以根据自己的目标平台的硬件支持情况，选择 CPU/ARM/OpenCL/Metal/NPU 等加速方案。
+2. 当你完成了模型的转换，第二步就是编译目标平台的 TNN 引擎了，你可以根据自己的目标平台的硬件支持情况，选择 ARM/OpenCL/Metal/NPU/X86/CUDA 等加速方案。
    对于这些平台，TNN 都提供了一键编译的脚本，使用非常方便。详细步骤可以参考这里[如何编译TNN](doc/cn/user/compile.md)。
 
 3. 最后一步就是使用编译好的 TNN 引擎进行推理，你可以在自己的应用程序中嵌入对 TNN 的调用，这方面我们提供了丰富而详实的 demo 来帮助你完成。
     *  [从0开始跑通一个iOS Demo](doc/cn/user/demo.md)
     *  [从0开始跑通一个Android Demo](doc/cn/user/demo.md)
-    *  [从0开始跑通一个Windows/Linux Demo](doc/cn/user/demo.md#四)
+    *  [从0开始跑通一个Windows/Linux/Mac Demo](doc/cn/user/demo.md#四)
 
 ## 技术方案
 
-目前TNN已经在手Q、微视、P图等应用中落地，其具有的以下特性获得了广泛的好评。
+目前TNN已经在手Q、微视、P图，腾讯云等应用中落地，其具有的以下特性获得了广泛的好评。
 
 * 计算优化
     * 针对不同架构在硬件指令发射、吞吐、延迟、缓存带宽、缓存延迟、寄存器数量等特点，深度优化底层算子，极致利用硬件算力
-    * 主流硬件平台(CPU: ARMv7， ARMv8， GPU: Mali， Adreno， Apple) 深度调优
+    * 主流硬件平台(CPU: ARMv7， ARMv8， GPU: Mali， Adreno， Apple， X86， CUDA) 深度调优
     * CNN 核心卷积运算通过 Winograd，Tile-GEMM， Direct Conv 等多种算法实现，保证不同参数、计算尺度下高效计算
     * Op 融合：离线分析网络计算图，多个小 Op（计算量小、功能较简单）融合运算，减少反复内存读取、kernel 启动等开销
 
