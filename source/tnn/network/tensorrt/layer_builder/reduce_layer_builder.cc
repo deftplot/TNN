@@ -38,7 +38,7 @@ ILayer* ReduceTRTLayerBuilder::AddToNetwork(INetworkDefinition* network) {
 
     auto foreign_tensor = dynamic_cast<ForeignBlob*>(input_blobs_[0])->GetForeignTensor();
     auto tensor = std::dynamic_pointer_cast<TensorRTTensor>(foreign_tensor)->GetTensor();
-    IReduceLayer* layer = network->addReduce(*tensor, m_op, reduceAxis, true);
+    IReduceLayer* layer = network->addReduce(*tensor, m_op, reduceAxis, paramlist->keep_dims == 1);
     if (layer != nullptr) {
         layer->setName(layer_name_.c_str());
     }

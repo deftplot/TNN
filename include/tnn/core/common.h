@@ -60,7 +60,11 @@ typedef enum {
     // int32
     DATA_TYPE_INT32 = 3,
     // brain float 16
-    DATA_TYPE_BFP16 = 4
+    DATA_TYPE_BFP16 = 4,
+    // int64
+    DATA_TYPE_INT64 = 5,
+    // uint32
+    DATA_TYPE_UINT32 = 6
 } DataType;
 
 typedef enum {
@@ -192,6 +196,11 @@ struct PUBLIC ModelConfig {
     // atlas model need one param: config string.
     std::vector<std::string> params = {};
 };
+
+typedef union {
+    float f;
+    int i;
+} RangeData;
 
 }  // namespace TNN_NS
 

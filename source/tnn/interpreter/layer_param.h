@@ -102,7 +102,8 @@ struct ConvLayerParam : public LayerParam {
 };
 
 struct PadLayerParam : public LayerParam {
-    //[w_begin, w_end, h_begin, h_end, c_begin, c_end]
+    //for old Pad the order is  [w_begin, w_end, h_begin, h_end, c_begin, c_end]
+    //for PadV2 the order correspand to input dims, same as ONNX, like [x1_begin, x2_begin,...,x1_end, x2_end,...]
     std::vector<int> pads;
     // 0:const 1:reflect 2:edge
     int type    = 0;
@@ -157,6 +158,15 @@ struct UpsampleLayerParam : public LayerParam {
     PARAM_COPY(UpsampleLayerParam)
 };
 
+struct RangeLayerParam : public LayerParam {
+    DataType type = DATA_TYPE_FLOAT;
+    RangeData start = {0};
+    RangeData limit = {0};
+    RangeData delta = { .i = 1};
+    
+    PARAM_COPY(RangeLayerParam)
+};
+
 struct SoftmaxLayerParam : public LayerParam {
     int axis = 1;
 
@@ -204,6 +214,18 @@ struct CastLayerParam : public LayerParam {
     int to = 0;
 
     PARAM_COPY(CastLayerParam)
+};
+
+struct HistogramLayerParam : public LayerParam {
+    int depth;
+    PARAM_COPY(HistogramLayerParam)
+};
+
+struct BitShiftLayerParam : public LayerParam {
+    //0: rigth 1:left
+    int direction = 0;
+    int bits = 0;
+    PARAM_COPY(BitShiftLayerParam)
 };
 
 struct ScaleLayerParam : public LayerParam {
@@ -514,9 +536,16 @@ struct GatherLayerParam : public LayerParam {
     PARAM_COPY(GatherLayerParam)
 };
 
+struct GatherNDLayerParam : public LayerParam {
+    int batch_dims                 = 0;
+    PARAM_COPY(GatherNDLayerParam)
+};
+
 struct LSTMONNXLayerParam : public LayerParam {
     float clip_threshold = 0;
     int hidden_size      = 0;
+    //0: forword 1:reverse 2:bidirection
+    int direction                        = 0;
 
     PARAM_COPY(LSTMONNXLayerParam)
 };

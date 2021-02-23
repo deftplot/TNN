@@ -45,7 +45,12 @@ public:
     
     // @brief network deinit to release init create resource
     virtual Status DeInit();
-
+    
+    // @brief get optimized NetStructure and NetResource without const layers of flag >= flag0, it must be called after Forward
+    Status GetOptimizedNet(std::shared_ptr<NetStructure> &opt_structure,
+                                   std::shared_ptr<NetResource> &opt_resource,
+                                   int  flag0 = DATA_FLAG_CHANGE_NEVER);
+    
 public:
     // @brief int net with network config, net structure and net resource info
     // @param config network config info

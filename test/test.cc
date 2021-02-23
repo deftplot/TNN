@@ -431,7 +431,7 @@ namespace test {
             if (FLAGS_ip.empty()) {
                 for (int i = 0; i < data_count; i++) {
                     if (mat_type == NCHW_FLOAT) {
-                        reinterpret_cast<float*>(mat_data)[i] = (float)(rand() % 256 - 128) / 128.0f;
+                        reinterpret_cast<float*>(mat_data)[i] = (float)(rand() % 256) / 128.0f;
                         for(int j = 1; j < dims[0]; ++j) {
                             reinterpret_cast<float*>(mat_data)[i + j * data_count] = reinterpret_cast<float*>(mat_data)[i];
                         }

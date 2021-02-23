@@ -9,17 +9,25 @@
 //
 // Unless required by applicable law or agreed to in writing, software distributed
 // under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-// CONDITIONS OF ANY KIND, either express or implied. See the License for the 
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
-#ifndef TNN_SOURCE_TNN_HALF_UTILS_H_
-#define TNN_SOURCE_TNN_HALF_UTILS_H_
-#include <stdint.h>
+
+#include "base_layer.h"
+#include "tnn/utils/dims_vector_utils.h"
 
 namespace TNN_NS {
-// @brief convert float to half
-int ConvertFromFloatToHalf(float *fp32, void *fp16, int count);
-// @brief convert half to float
-int ConvertFromHalfToFloat(void *fp16, float *fp32, int count);
-} // namespace TNN_NS
+DECLARE_LAYER(BitShift, LAYER_BITSHIFT);
 
-#endif //TNN_SOURCE_TNN_HALF_UTILS_H_
+Status BitShiftLayer::InferOutputDataType() {
+    return BaseLayer::InferOutputDataType();
+}
+
+Status BitShiftLayer::InferOutputShape(bool ignore_error) {
+    BaseLayer::InferOutputShape(ignore_error);
+    output_blobs_[0]->GetBlobDesc().dims = input_blobs_[0]->GetBlobDesc().dims;
+    return TNN_OK;
+}
+
+REGISTER_LAYER(BitShift, LAYER_BITSHIFT);
+
+}  // namespace TNN_NS

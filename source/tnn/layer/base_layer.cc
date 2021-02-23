@@ -107,7 +107,7 @@ Status BaseLayer::InferOutputShape(bool ignore_error) {
     }
     
     //
-    if (runtime_model_ == RUNTIME_MODE_NORMAL) {
+    if (runtime_model_ == RUNTIME_MODE_NORMAL || GetLayerChangeFlag() == DATA_FLAG_CHANGE_NEVER) {
         return FillLayerParamWithConstantResource();
     }
     return TNN_OK;
@@ -151,6 +151,7 @@ Status BaseLayer::InferOutputDataType() {
                 flag = flag | DATA_FLAG_ALLOCATE_IN_FORWARD;
             }
         }
+
         iter->flag = flag;
     }
     return TNN_OK;
@@ -250,6 +251,14 @@ bool BaseLayer::IsOutputConstant() {
         }
     }
     return true;
+}
+
+int BaseLayer::GetLayerChangeFlag() {
+    int flag = DATA_FLAG_CHANGE_NEVER;
+    for (auto iter : output_blobs_) {
+        flag = DataFlagUtils::ChangeStatus(DataFlagUtils::MinChangeStatus(flag, iter->flag));
+    }
+    return flag;
 }
 
 void BaseLayer::SetConstantResource(ConstantResource* consts) {
