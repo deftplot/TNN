@@ -187,6 +187,7 @@ enum LayerType {
 
     LAYER_CONVOLUTION_3D                                    = 201,
     LAYER_POOLING_3D                                        = 202,
+    LAYER_CONVOLUTION_1D                                    = 203,
 
     LAYER_HDRGUIDE                                          = 302,
     LAYER_PIXEL_SHUFFLE                                     = 303,
@@ -203,6 +204,7 @@ enum LayerType {
     LAYER_HISTOGRAM                                         = 314,
     LAYER_GATHERND                                          = 315,
     LAYER_PADV2                                             = 316,
+    LAYER_ROIALIGN                                          = 317,
 
     LAYER_BLOB_SCALE                                        = 600,
 
